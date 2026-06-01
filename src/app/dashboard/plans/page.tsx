@@ -7,7 +7,6 @@ const ALL_MODULES = [
     { key: "reports", label: "Reportes" },
     { key: "branches", label: "Sucursales" },
     { key: "users", label: "Usuarios" },
-    { key: "stock", label: "Control de Stock" },
     { key: "stock_movements", label: "Stock - Movimientos" },
     { key: "suppliers", label: "Compras - Proveedores" },
     { key: "purchase_orders", label: "Compras - Órdenes de Compra" },

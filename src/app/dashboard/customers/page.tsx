@@ -22,8 +22,8 @@ export default function CustomersPage() {
         fetchCustomers();
     }, []);
 
-    const filteredCustomers = customers.filter(c => 
-        c.email.toLowerCase().includes(search.toLowerCase()) || 
+    const filteredCustomers = customers.filter(c =>
+        c.email.toLowerCase().includes(search.toLowerCase()) ||
         c.name.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -33,7 +33,7 @@ export default function CustomersPage() {
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Users className="text-primary" />
-                        Cartera de Clientes
+                        Clientes
                     </h1>
                     <p className="text-muted-foreground text-sm">Gestiona los dueños de negocios centralizadamente.</p>
                 </div>
@@ -71,7 +71,7 @@ export default function CustomersPage() {
                                     <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
                                         <div className="flex flex-col items-center gap-2">
                                             <RefreshCw className="animate-spin w-6 h-6 text-primary" />
-                                            <span>Cargando cartera de clientes...</span>
+                                            <span>Cargando  clientes...</span>
                                         </div>
                                     </td>
                                 </tr>
