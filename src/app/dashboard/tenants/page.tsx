@@ -10,10 +10,11 @@ interface Tenant {
     id: string; name: string; slug: string; ownerName: string;
     ownerEmail: string; ownerPhone?: string; domain?: string;
     status: string; subscriptionStart: string; subscriptionEnd?: string;
-    monthlyPrice?: number; planId?: number; plan?: { name: string; id: number };
+    monthlyPrice?: number; planId?: number; plan?: { name: string; id: number; enabledModules?: string[] };
     pendingPlanId?: number; pendingPlan?: { id: number; name: string };
     ownerPassword?: string;
     rubroId?: number; rubro?: { id: number; name: string; slug: string; icon?: string };
+    enabledModules?: string[];
     _count?: { payments: number };
 }
 
@@ -21,7 +22,22 @@ interface Rubro {
     id: number; slug: string; name: string; icon?: string;
 }
 
-const emptyForm = { name: "", ownerName: "", ownerEmail: "", ownerPhone: "", domain: "", planId: "", rubroId: "", monthlyPrice: "", subscriptionEnd: "", notes: "", ownerPassword: "" };
+const emptyForm = { name: "", ownerName: "", ownerEmail: "", ownerPhone: "", domain: "", planId: "", rubroId: "", monthlyPrice: "", subscriptionEnd: "", notes: "", ownerPassword: "", enabledModules: [] };
+
+const MODULE_TRANSLATIONS: Record<string, string> = {
+    "products": "Catálogo",
+    "sales": "Ventas",
+    "categories": "Categorías",
+    "settings": "Ajustes",
+    "suppliers": "Proveedores",
+    "expenses": "Gastos",
+    "analytics": "Estadísticas",
+    "chatbot": "Chatbot IA",
+    "customers": "Clientes",
+    "marketing": "Marketing"
+};
+
+const translateModule = (mod: string) => MODULE_TRANSLATIONS[mod] || mod;
 
 export default function TenantsPage() {
     const router = useRouter();
@@ -84,10 +100,11 @@ export default function TenantsPage() {
             setForm({
                 ...form,
                 planId,
-                monthlyPrice: selectedPlan.monthlyPrice
+                monthlyPrice: selectedPlan.monthlyPrice,
+                enabledModules: selectedPlan.enabledModules?.length > 0 ? selectedPlan.enabledModules : ["products", "sales", "categories", "settings"]
             });
         } else {
-            setForm({ ...form, planId });
+            setForm({ ...form, planId, enabledModules: [] });
         }
     };
 
@@ -98,7 +115,8 @@ export default function TenantsPage() {
             planId: form.planId ? parseInt(form.planId) : null,
             rubroId: form.rubroId ? parseInt(form.rubroId) : null,
             monthlyPrice: form.monthlyPrice ? parseFloat(form.monthlyPrice) : null,
-            subscriptionEnd: form.subscriptionEnd ? new Date(form.subscriptionEnd).toISOString() : null
+            subscriptionEnd: form.subscriptionEnd ? new Date(form.subscriptionEnd).toISOString() : null,
+            enabledModules: form.enabledModules || []
         };
         try {
             await createTenant(data);
@@ -127,6 +145,7 @@ export default function TenantsPage() {
                 subscriptionEnd: editForm.subscriptionEnd ? new Date(editForm.subscriptionEnd).toISOString() : null,
                 notes: editForm.notes,
                 ownerPassword: editForm.ownerPassword || undefined,
+                enabledModules: editForm.enabledModules || []
             });
             setShowEditModal(false);
             fetchTenantsData(search, statusFilter);
@@ -142,7 +161,8 @@ export default function TenantsPage() {
             ...t,
             planId: t.plan?.id || t.planId || "",
             rubroId: t.rubro?.id || t.rubroId || "",
-            subscriptionEnd: t.subscriptionEnd ? new Date(t.subscriptionEnd).toISOString().split('T')[0] : ""
+            subscriptionEnd: t.subscriptionEnd ? new Date(t.subscriptionEnd).toISOString().split('T')[0] : "",
+            enabledModules: t.enabledModules?.length ? t.enabledModules : (t.plan?.enabledModules || [])
         });
         setShowEditModal(true);
     };
@@ -518,6 +538,42 @@ export default function TenantsPage() {
                                 </div>
                             </div>
 
+                            {/* Modulos disponibles (Form Creacion) */}
+                            <div className="bg-neutral-50 dark:bg-[#121334]/50 border border-neutral-200 dark:border-[#1e214d]/50 rounded-xl p-3">
+                                <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-2">Módulos Activos</label>
+                                {form.planId ? (() => {
+                                    const p = plans.find(plan => plan.id.toString() === form.planId.toString());
+                                    const allowedModules = p?.enabledModules?.length > 0 ? p.enabledModules : ["products", "sales", "categories", "settings"];
+                                    
+                                    return (
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {allowedModules.map((mod: string) => {
+                                                const isActive = (form.enabledModules || []).includes(mod);
+                                                return (
+                                                    <label key={mod} className="flex items-center gap-2 cursor-pointer p-1.5 hover:bg-neutral-100 dark:hover:bg-[#16183a] rounded">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="rounded border-neutral-300 text-orange-500 focus:ring-orange-500 dark:border-zinc-700 bg-transparent"
+                                                            checked={isActive}
+                                                            onChange={() => {
+                                                                const current = form.enabledModules || [];
+                                                                setForm({
+                                                                    ...form, 
+                                                                    enabledModules: isActive ? current.filter((m: string) => m !== mod) : [...current, mod]
+                                                                });
+                                                            }}
+                                                        />
+                                                        <span className="text-[11px] text-neutral-700 dark:text-neutral-300 capitalize">{translateModule(mod)}</span>
+                                                    </label>
+                                                )
+                                            })}
+                                        </div>
+                                    );
+                                })() : (
+                                    <p className="text-[11px] text-neutral-500 italic py-2">Selecciona un Plan SaaS primero para ver y configurar sus módulos disponibles.</p>
+                                )}
+                            </div>
+
                             <div>
                                 <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-1">Vencimiento del Ciclo</label>
                                 <input
@@ -654,7 +710,8 @@ export default function TenantsPage() {
                                             setEditForm({
                                                 ...editForm,
                                                 planId: pid,
-                                                monthlyPrice: plan ? plan.monthlyPrice : editForm.monthlyPrice
+                                                monthlyPrice: plan ? plan.monthlyPrice : editForm.monthlyPrice,
+                                                enabledModules: plan ? editForm.enabledModules?.filter((m: string) => (plan.enabledModules?.length > 0 ? plan.enabledModules : ["products", "sales", "categories", "settings"]).includes(m)) : []
                                             });
                                         }}
                                     >
@@ -682,6 +739,42 @@ export default function TenantsPage() {
                                         onChange={(e) => setEditForm({ ...editForm, monthlyPrice: e.target.value })}
                                     />
                                 </div>
+                            </div>
+
+                            {/* Modulos disponibles (Form Edición) */}
+                            <div className="bg-neutral-50 dark:bg-[#121334]/50 border border-neutral-200 dark:border-[#1e214d]/50 rounded-xl p-3">
+                                <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-2">Módulos Activos</label>
+                                {editForm.planId ? (() => {
+                                    const p = plans.find(plan => plan.id.toString() === editForm.planId.toString());
+                                    const allowedModules = p?.enabledModules?.length > 0 ? p.enabledModules : ["products", "sales", "categories", "settings"];
+                                    
+                                    return (
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {allowedModules.map((mod: string) => {
+                                                const isActive = (editForm.enabledModules || []).includes(mod);
+                                                return (
+                                                    <label key={mod} className="flex items-center gap-2 cursor-pointer p-1.5 hover:bg-neutral-100 dark:hover:bg-[#16183a] rounded">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="rounded border-neutral-300 text-orange-500 focus:ring-orange-500 dark:border-zinc-700 bg-transparent"
+                                                            checked={isActive}
+                                                            onChange={() => {
+                                                                const current = editForm.enabledModules || [];
+                                                                setEditForm({
+                                                                    ...editForm, 
+                                                                    enabledModules: isActive ? current.filter((m: string) => m !== mod) : [...current, mod]
+                                                                });
+                                                            }}
+                                                        />
+                                                        <span className="text-[11px] text-neutral-700 dark:text-neutral-300 capitalize">{translateModule(mod)}</span>
+                                                    </label>
+                                                )
+                                            })}
+                                        </div>
+                                    );
+                                })() : (
+                                    <p className="text-[11px] text-neutral-500 italic py-2">Selecciona un Plan SaaS primero para ver y configurar sus módulos disponibles.</p>
+                                )}
                             </div>
 
                             <div>
