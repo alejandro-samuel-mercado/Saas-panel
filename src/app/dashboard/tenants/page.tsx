@@ -373,7 +373,7 @@ export default function TenantsPage() {
                                             }}
                                             className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/5 dark:bg-emerald-500/5 px-2.5 py-1 rounded-lg border border-emerald-500/15 dark:border-emerald-500/15 cursor-pointer focus:outline-none hover:bg-emerald-500/10 transition-colors max-w-[140px] truncate"
                                         >
-                                            <option value="" className="text-neutral-800 dark:text-neutral-200 bg-white dark:bg-[#121334]">Sin Rubro</option>
+
                                             {rubros.map(r => (
                                                 <option key={r.id} value={r.id} className="text-neutral-800 dark:text-neutral-200 bg-white dark:bg-[#121334]">
                                                     {r.name}
@@ -544,21 +544,21 @@ export default function TenantsPage() {
                                 {form.planId ? (() => {
                                     const p = plans.find(plan => plan.id.toString() === form.planId.toString());
                                     const allowedModules = p?.enabledModules?.length > 0 ? p.enabledModules : ["products", "sales", "categories", "settings"];
-                                    
+
                                     return (
                                         <div className="grid grid-cols-2 gap-2">
                                             {allowedModules.map((mod: string) => {
                                                 const isActive = (form.enabledModules || []).includes(mod);
                                                 return (
                                                     <label key={mod} className="flex items-center gap-2 cursor-pointer p-1.5 hover:bg-neutral-100 dark:hover:bg-[#16183a] rounded">
-                                                        <input 
-                                                            type="checkbox" 
+                                                        <input
+                                                            type="checkbox"
                                                             className="rounded border-neutral-300 text-orange-500 focus:ring-orange-500 dark:border-zinc-700 bg-transparent"
                                                             checked={isActive}
                                                             onChange={() => {
                                                                 const current = form.enabledModules || [];
                                                                 setForm({
-                                                                    ...form, 
+                                                                    ...form,
                                                                     enabledModules: isActive ? current.filter((m: string) => m !== mod) : [...current, mod]
                                                                 });
                                                             }}
@@ -747,21 +747,21 @@ export default function TenantsPage() {
                                 {editForm.planId ? (() => {
                                     const p = plans.find(plan => plan.id.toString() === editForm.planId.toString());
                                     const allowedModules = p?.enabledModules?.length > 0 ? p.enabledModules : ["products", "sales", "categories", "settings"];
-                                    
+
                                     return (
                                         <div className="grid grid-cols-2 gap-2">
                                             {allowedModules.map((mod: string) => {
                                                 const isActive = (editForm.enabledModules || []).includes(mod);
                                                 return (
                                                     <label key={mod} className="flex items-center gap-2 cursor-pointer p-1.5 hover:bg-neutral-100 dark:hover:bg-[#16183a] rounded">
-                                                        <input 
-                                                            type="checkbox" 
+                                                        <input
+                                                            type="checkbox"
                                                             className="rounded border-neutral-300 text-orange-500 focus:ring-orange-500 dark:border-zinc-700 bg-transparent"
                                                             checked={isActive}
                                                             onChange={() => {
                                                                 const current = editForm.enabledModules || [];
                                                                 setEditForm({
-                                                                    ...editForm, 
+                                                                    ...editForm,
                                                                     enabledModules: isActive ? current.filter((m: string) => m !== mod) : [...current, mod]
                                                                 });
                                                             }}
