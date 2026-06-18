@@ -133,20 +133,26 @@ export default function TenantsPage() {
     const handleSaveEdit = async () => {
         setSaving(true);
         try {
-            await updateTenant(editForm.id, {
+            // SEGURIDAD: No enviar rubroId si ya estaba asignado (es permanente).
+            // Solo se envía si el tenant no tenía rubro y se está asignando por primera vez.
+            const payload: any = {
                 name: editForm.name,
                 ownerName: editForm.ownerName,
                 ownerEmail: editForm.ownerEmail,
                 ownerPhone: editForm.ownerPhone,
                 domain: editForm.domain,
                 planId: editForm.planId ? parseInt(editForm.planId) : null,
-                rubroId: editForm.rubroId ? parseInt(editForm.rubroId) : null,
                 monthlyPrice: editForm.monthlyPrice ? parseFloat(editForm.monthlyPrice) : null,
                 subscriptionEnd: editForm.subscriptionEnd ? new Date(editForm.subscriptionEnd).toISOString() : null,
                 notes: editForm.notes,
                 ownerPassword: editForm.ownerPassword || undefined,
                 enabledModules: editForm.enabledModules || []
-            });
+            };
+            // Solo incluir rubroId si se está asignando por primera vez (no tenía ninguno)
+            if (!editForm._originalRubroId && editForm.rubroId) {
+                payload.rubroId = parseInt(editForm.rubroId);
+            }
+            await updateTenant(editForm.id, payload);
             setShowEditModal(false);
             fetchTenantsData(search, statusFilter);
         } catch (err: any) {
@@ -157,10 +163,12 @@ export default function TenantsPage() {
     };
 
     const openEditModal = (t: Tenant) => {
+        const originalRubroId = (t as any).rubro?.id || (t as any).rubroId || "";
         setEditForm({
             ...t,
             planId: t.plan?.id || t.planId || "",
-            rubroId: t.rubro?.id || t.rubroId || "",
+            rubroId: originalRubroId,
+            _originalRubroId: originalRubroId, // snapshot para detectar si ya tenía rubro
             subscriptionEnd: t.subscriptionEnd ? new Date(t.subscriptionEnd).toISOString().split('T')[0] : "",
             enabledModules: t.enabledModules?.length ? t.enabledModules : (t.plan?.enabledModules || [])
         });
@@ -358,28 +366,39 @@ export default function TenantsPage() {
                                             )}
                                         </div>
                                     </td>
-                                    {/* Rubro */}
+                                    {/* Rubro — INMUTABLE una vez asignado */}
                                     <td>
-                                        <select
-                                            value={t.rubro?.id || t.rubroId || ""}
-                                            onChange={async (e) => {
-                                                const rid = e.target.value ? parseInt(e.target.value) : null;
-                                                try {
-                                                    await updateTenantRubro(t.id, rid);
-                                                    fetchTenantsData(search, statusFilter);
-                                                } catch (err: any) {
-                                                    alert(err.response?.data?.message || "Error al actualizar rubro");
-                                                }
-                                            }}
-                                            className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/5 dark:bg-emerald-500/5 px-2.5 py-1 rounded-lg border border-emerald-500/15 dark:border-emerald-500/15 cursor-pointer focus:outline-none hover:bg-emerald-500/10 transition-colors max-w-[140px] truncate"
-                                        >
-
-                                            {rubros.map(r => (
-                                                <option key={r.id} value={r.id} className="text-neutral-800 dark:text-neutral-200 bg-white dark:bg-[#121334]">
-                                                    {r.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        {(t.rubro?.id || t.rubroId) ? (
+                                            // Si ya tiene rubro: solo lectura (inmutable)
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 flex items-center gap-1.5 max-w-[140px] truncate">
+                                                    🏢 {t.rubro?.name || 'Asignado'}
+                                                </span>
+                                                <span title="El rubro es permanente" className="text-[9px] text-neutral-400 cursor-help">🔒</span>
+                                            </div>
+                                        ) : (
+                                            // Sin rubro: permitir asignar por primera vez
+                                            <select
+                                                value=""
+                                                onChange={async (e) => {
+                                                    const rid = e.target.value ? parseInt(e.target.value) : null;
+                                                    if (!rid) return;
+                                                    if (!confirm(`¿Confirmar asignar el rubro "${rubros.find(r => r.id === rid)?.name}" a este negocio? Esta acción es PERMANENTE e irreversible.`)) return;
+                                                    try {
+                                                        await updateTenantRubro(t.id, rid);
+                                                        fetchTenantsData(search, statusFilter);
+                                                    } catch (err: any) {
+                                                        alert(err.response?.data?.message || "Error al asignar rubro");
+                                                    }
+                                                }}
+                                                className="text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-500/5 px-2.5 py-1 rounded-lg border border-amber-500/25 cursor-pointer focus:outline-none hover:bg-amber-500/10 transition-colors max-w-[140px] truncate"
+                                            >
+                                                <option value="">Sin rubro...</option>
+                                                {rubros.map(r => (
+                                                    <option key={r.id} value={r.id}>{r.name}</option>
+                                                ))}
+                                            </select>
+                                        )}
                                     </td>
                                     <td>
                                         <span className={`premium-badge ${t.status === "ACTIVE" ? "badge-active" : t.status === "PAUSED" ? "badge-paused" : "badge-suspended"}`}>
@@ -779,16 +798,31 @@ export default function TenantsPage() {
 
                             <div>
                                 <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-1">Rubro del Negocio</label>
-                                <select
-                                    className="premium-input w-full px-3.5 py-2 text-xs cursor-pointer"
-                                    value={editForm.rubroId || ""}
-                                    onChange={(e) => setEditForm({ ...editForm, rubroId: e.target.value })}
-                                >
-                                    <option value="">Sin Rubro asignado</option>
-                                    {rubros.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                                </select>
-                                <p className="text-[9px] text-neutral-400 dark:text-[#9499c3] mt-1">
-                                    Define el tipo de negocio y activa los módulos correspondientes.
+                                {editForm.rubroId ? (
+                                    // Rubro ya asignado: BLOQUEADO, no se puede cambiar
+                                    <div className="flex items-center gap-2 premium-input px-3.5 py-2">
+                                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                                            🏢 {rubros.find(r => r.id.toString() === editForm.rubroId?.toString())?.name || 'Rubro asignado'}
+                                        </span>
+                                        <span className="ml-auto text-[10px] font-semibold text-red-500 dark:text-red-400 flex items-center gap-1">🔒 Permanente</span>
+                                    </div>
+                                ) : (
+                                    // Sin rubro: se puede asignar por primera vez
+                                    <select
+                                        className="premium-input w-full px-3.5 py-2 text-xs cursor-pointer"
+                                        value={editForm.rubroId || ""}
+                                        onChange={(e) => setEditForm({ ...editForm, rubroId: e.target.value })}
+                                    >
+                                        <option value="">Sin Rubro asignado</option>
+                                        {rubros.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                    </select>
+                                )}
+                                <p className="text-[9px] mt-1">
+                                    {editForm.rubroId ? (
+                                        <span className="text-red-500 dark:text-red-400 font-semibold">⚠️ El rubro es permanente e irreversible. Define toda la estructura de datos del negocio.</span>
+                                    ) : (
+                                        <span className="text-amber-600 dark:text-amber-400">Una vez asignado, el rubro NO podrá modificarse.</span>
+                                    )}
                                 </p>
                             </div>
 
