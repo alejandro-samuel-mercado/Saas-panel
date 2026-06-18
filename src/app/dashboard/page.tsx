@@ -154,7 +154,7 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center mb-6">
                         <div>
                             <h3 className="font-extrabold text-sm text-neutral-800 dark:text-white">Últimas Transacciones</h3>
-                            <p className="text-[10px] text-neutral-400 dark:text-[#9499c3]">Últimos pagos de canon mensual ingresados</p>
+                            <p className="text-[10px] text-neutral-400 dark:text-[#9499c3]">Últimos pagos de cuota mensual ingresados</p>
                         </div>
                         <Link
                             href="/dashboard/payments"

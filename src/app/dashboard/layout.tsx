@@ -7,6 +7,7 @@ import { Moon, Sun, Bell, HelpCircle, Activity } from "lucide-react";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<"light" | "dark">("dark");
     const [ready, setReady] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -55,11 +56,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Structural Master Frame Borders around screen */}
             <div className="master-frame-border" />
 
-            {/* Left Sidebar - w-72 wider size and fully fixed */}
-            <Sidebar />
+            {/* Left Sidebar - width transitions based on isCollapsed */}
+            <Sidebar isCollapsed={isCollapsed} onToggle={() => setIsCollapsed(!isCollapsed)} />
 
             {/* Right Content Space */}
-            <main className="flex-1 flex flex-col overflow-hidden relative ml-72 m-2.5 rounded-l-2xl border-l border-border bg-background">
+            <main className={`flex-1 flex flex-col overflow-hidden relative m-2.5 rounded-l-2xl border-l border-border bg-background transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-72'}`}>
 
                 {/* Top Header inside main view */}
                 <header className="h-20 px-8 flex items-center justify-between z-10 bg-background border-b border-border transition-colors duration-300">

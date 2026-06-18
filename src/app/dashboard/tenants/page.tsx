@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getTenants, createTenant, updateTenant, getPlans, getRubros, updateTenantRubro } from "@/lib/api";
+import { getTenants, createTenant, updateTenant, getPlans, getRubros, updateTenantRubro, pauseTenant, resumeTenant } from "@/lib/api";
 import { Plus, Search, Eye, Filter, RefreshCw, X, Calendar, User, Globe, Phone, FileText, CheckCircle2, Pencil, Building2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -401,9 +401,36 @@ export default function TenantsPage() {
                                         )}
                                     </td>
                                     <td>
-                                        <span className={`premium-badge ${t.status === "ACTIVE" ? "badge-active" : t.status === "PAUSED" ? "badge-paused" : "badge-suspended"}`}>
-                                            {t.status === "ACTIVE" ? "Activo" : t.status === "PAUSED" ? "Pausado" : "Suspendido"}
-                                        </span>
+                                        <select
+                                            value={t.status}
+                                            onChange={async (e) => {
+                                                const newStatus = e.target.value;
+                                                const actionName = newStatus === "ACTIVE" ? "activar" : "pausar";
+                                                if (!confirm(`¿Estás seguro de ${actionName} la tienda ${t.name}?`)) return;
+                                                
+                                                try {
+                                                    if (newStatus === "ACTIVE") {
+                                                        await resumeTenant(t.id);
+                                                    } else {
+                                                        await pauseTenant(t.id, "Pausado manualmente desde panel");
+                                                    }
+                                                    fetchTenantsData(search, statusFilter);
+                                                } catch (err: any) {
+                                                    alert(err.response?.data?.message || `Error al ${actionName} el negocio`);
+                                                }
+                                            }}
+                                            className={`text-[11px] font-bold px-2 py-1.5 rounded-lg border cursor-pointer focus:outline-none transition-colors ${
+                                                t.status === "ACTIVE" 
+                                                    ? "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20" 
+                                                    : t.status === "PAUSED" 
+                                                        ? "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20" 
+                                                        : "text-rose-700 bg-rose-50 border-rose-200 dark:text-rose-400 dark:bg-rose-500/10 dark:border-rose-500/20"
+                                            }`}
+                                        >
+                                            <option value="ACTIVE" className="text-neutral-800 dark:text-neutral-200 bg-white dark:bg-[#121334]">Activo</option>
+                                            <option value="PAUSED" className="text-neutral-800 dark:text-neutral-200 bg-white dark:bg-[#121334]">Pausado</option>
+                                            {t.status === "SUSPENDED" && <option value="SUSPENDED" className="text-neutral-800 dark:text-neutral-200 bg-white dark:bg-[#121334]">Suspendido</option>}
+                                        </select>
                                     </td>
                                     <td>
                                         <div className="text-xs text-neutral-700 dark:text-white font-medium">
@@ -546,7 +573,7 @@ export default function TenantsPage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-1">Canon Mensual ($)</label>
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-1">Cuota Mensual ($)</label>
                                     <input
                                         className="premium-input w-full px-3.5 py-2 text-xs"
                                         type="number"
@@ -750,7 +777,7 @@ export default function TenantsPage() {
                                     )}
                                 </div>
                                 <div>
-                                    <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-1">Canon Mensual ($)</label>
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-1">Cuota Mensual ($)</label>
                                     <input
                                         className="premium-input w-full px-3.5 py-2 text-xs"
                                         type="number"

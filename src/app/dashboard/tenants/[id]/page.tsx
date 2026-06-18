@@ -123,13 +123,13 @@ export default function TenantDetailPage() {
                     </div>
                 </div>
 
-                    {/* Main Action Buttons */}
-                    <div className="flex flex-wrap gap-2.5">                    <button
-                        className="btn-grad px-4 py-2 text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
-                        onClick={() => setShowPayment(true)}
-                    >
-                        <CreditCard size={14} /> Registrar Pago
-                    </button>
+                {/* Main Action Buttons */}
+                <div className="flex flex-wrap gap-2.5">                    <button
+                    className="btn-grad px-4 py-2 text-xs flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    onClick={() => setShowPayment(true)}
+                >
+                    <CreditCard size={14} /> Registrar Pago
+                </button>
 
                     {tenant.status === "ACTIVE" ? (
                         <button
@@ -202,7 +202,7 @@ export default function TenantDetailPage() {
                             <strong className="text-orange-600 dark:text-indigo-300 font-bold bg-orange-500/10 dark:bg-indigo-500/10 px-2 py-0.5 rounded border border-orange-500/20 dark:border-indigo-500/20">{tenant.plan?.name || "Sin Plan"}</strong>
                         </div>
                         <div className="flex justify-between py-1.5 border-b border-neutral-200 dark:border-[#1e214d]/30">
-                            <span className="text-neutral-400 dark:text-[#9499c3]">Canon Mensual Cobrado</span>
+                            <span className="text-neutral-400 dark:text-[#9499c3]">Cuota Mensual Cobrado</span>
                             <strong className="text-emerald-600 dark:text-emerald-400 font-extrabold">${Number(tenant.monthlyPrice || 0).toLocaleString()}/mes</strong>
                         </div>
                         <div className="flex justify-between py-1.5 border-b border-neutral-200 dark:border-[#1e214d]/30">
@@ -478,7 +478,7 @@ export default function TenantDetailPage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-1">Canon Mensual ($)</label>
+                                    <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-1">Cuota Mensual ($)</label>
                                     <input
                                         className="premium-input w-full px-3.5 py-2 text-xs"
                                         type="number"
