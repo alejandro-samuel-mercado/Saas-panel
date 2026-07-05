@@ -1,7 +1,7 @@
 "use client";
+import { createPlan, deletePlan, getPlans, updatePlan } from "@/lib/api";
+import { Check, Edit2, Package, Plus, Store, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getPlans, createPlan, updatePlan, deletePlan } from "@/lib/api";
-import { Plus, Edit2, Trash2, Package, Store, Check, X } from "lucide-react";
 
 const ALL_MODULES = [
     { key: "reports", label: "Reportes" },
@@ -16,13 +16,13 @@ const ALL_MODULES = [
     { key: "coupons", label: "Administración - Cupones" },
     { key: "discounts", label: "Administración - Descuentos" },
     { key: "shipping", label: "Envíos" },
-    { key: "payment_gateways", label: "Pasarelas de Pago" },
-    { key: "events", label: "Eventos" },
+  
+  
     { key: "bot", label: "Asistente Bot" },
     { key: "web_content", label: "Contenido Web" },
-    { key: "blog", label: "Blog" },
+  
     { key: "audit", label: "Auditoría" },
-    { key: "alerts", label: "Alertas" },
+    
 ];
 
 const PAYMENT_METHODS = [
@@ -301,15 +301,7 @@ export default function PlansPage() {
                             <div>
                                 <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-2">Habilitación de Módulos Críticos</label>
                                 <div className="grid grid-cols-3 gap-3 bg-neutral-50 dark:bg-[#0c0d24]/50 p-4 rounded-xl border border-neutral-200 dark:border-[#1e214d]/50">
-                                    <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 dark:text-white">
-                                        <input
-                                            type="checkbox"
-                                            className="accent-orange-500 dark:accent-indigo-500 rounded"
-                                            checked={form.allowPOS}
-                                            onChange={(e) => setForm({ ...form, allowPOS: e.target.checked })}
-                                        />
-                                        <span>POS</span>
-                                    </label>
+                                    
                                     <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 dark:text-white">
                                         <input
                                             type="checkbox"
