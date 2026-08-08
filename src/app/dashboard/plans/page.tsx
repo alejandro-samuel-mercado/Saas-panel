@@ -55,11 +55,11 @@ function getModuleLabel(key: string) {
 interface Plan {
     id: number; name: string; monthlyPrice: number; maxProducts: number;
     maxBranches: number; allowCustomDomain: boolean; allowInvoicing: boolean;
-    allowPOS: boolean; enabledModules: string[]; description?: string;
+    allowPOS: boolean; allowPointsSystem: boolean; enabledModules: string[]; description?: string;
     isActive: boolean; _count?: { tenants: number };
 }
 
-const emptyForm = { name: "", monthlyPrice: "", maxProducts: "50", maxBranches: "1", allowCustomDomain: false, allowInvoicing: false, allowPOS: false, enabledModules: ["sales", "payment_method_cash", "payment_method_transfer", "payment_method_mercadopago"], description: "", isActive: true };
+const emptyForm = { name: "", monthlyPrice: "", maxProducts: "50", maxBranches: "1", allowCustomDomain: false, allowInvoicing: false, allowPOS: false, allowPointsSystem: false, enabledModules: ["sales", "payment_method_cash", "payment_method_transfer", "payment_method_mercadopago"], description: "", isActive: true };
 
 export default function PlansPage() {
     const [plans, setPlans] = useState<Plan[]>([]);
@@ -78,7 +78,7 @@ export default function PlansPage() {
     const openCreate = () => { setEditingId(null); setForm({ ...emptyForm }); setShowModal(true); };
     const openEdit = (p: Plan) => {
         setEditingId(p.id);
-        setForm({ name: p.name, monthlyPrice: p.monthlyPrice.toString(), maxProducts: p.maxProducts.toString(), maxBranches: p.maxBranches.toString(), allowCustomDomain: p.allowCustomDomain, allowInvoicing: p.allowInvoicing, allowPOS: p.allowPOS, enabledModules: p.enabledModules || [], description: p.description || "", isActive: p.isActive });
+        setForm({ name: p.name, monthlyPrice: p.monthlyPrice.toString(), maxProducts: p.maxProducts.toString(), maxBranches: p.maxBranches.toString(), allowCustomDomain: p.allowCustomDomain, allowInvoicing: p.allowInvoicing, allowPOS: p.allowPOS, allowPointsSystem: p.allowPointsSystem, enabledModules: p.enabledModules || [], description: p.description || "", isActive: p.isActive });
         setShowModal(true);
     };
 
@@ -369,6 +369,22 @@ export default function PlansPage() {
                                             onChange={() => toggleModule("custom_theme")}
                                         />
                                         <span>Apariencia y Colores</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Fidelity & Points */}
+                            <div>
+                                <label className="text-[10px] uppercase font-bold text-neutral-500 dark:text-[#9499c3] block mb-2">Fidelización de Clientes</label>
+                                <div className="grid grid-cols-1 gap-3 bg-neutral-50 dark:bg-[#0c0d24]/50 p-4 rounded-xl border border-neutral-200 dark:border-[#1e214d]/50">
+                                    <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 dark:text-white">
+                                        <input
+                                            type="checkbox"
+                                            className="accent-orange-500 dark:accent-indigo-500 rounded"
+                                            checked={form.allowPointsSystem || false}
+                                            onChange={(e) => setForm({ ...form, allowPointsSystem: e.target.checked })}
+                                        />
+                                        <span>Habilitar Sistema de Puntos</span>
                                     </label>
                                 </div>
                             </div>
